@@ -1,0 +1,66 @@
+plugins {
+	id 'org.springframework.boot' version '2.3.0.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+}
+
+group = 'com.tml.fleetman'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+
+
+dependencies {
+
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.kafka:spring-kafka'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+
+	testCompile('org.springframework.kafka:spring-kafka-test')
+
+
+    compile ('org.springframework.boot:spring-boot-starter') {
+        exclude module : 'spring-boot-starter-logging'
+    }
+    compile ('org.springframework.boot:spring-boot-starter-web') {
+        exclude module : 'spring-boot-starter-logging'
+    }
+    
+    compile group: 'org.springframework.kafka', name: 'spring-kafka', version: '2.3.7.RELEASE'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
+	compile group: 'org.apache.kafka', name: 'kafka_2.10', version: '0.8.0'
+	//compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+	compile group: 'log4j', name: 'log4j', version: '1.2.17'
+	
+	testCompile group: 'junit', name: 'junit', version: '4.13'
+	 compile('ch.qos.logback:logback-classic:1.1.7') {
+        exclude group: 'org.slf4j', module: 'slf4j-api' 
+    }
+}
+
+    
+
+configurations {
+ all {
+	exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	exclude group: 'ch.qos.logback', module: 'logback-classic'
+	exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+	exclude group: 'javax.jms', module: 'jms'
+	exclude group: 'com.sun.jdmk', module: 'jmxtools'
+	exclude group: 'com.sun.jmx', module: 'jmxri'
+     }
+}
+
+
+
+test {
+	useJUnitPlatform()
+}
