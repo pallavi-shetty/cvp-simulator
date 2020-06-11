@@ -1,14 +1,14 @@
 package com.tml.fleetman.cvpsimulator.vo;
 
-import java.time.LocalDateTime;
 import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
+/**
+ * Class that represents IoT vehicle data
+ * 
+ * @author Pallavi Shetty
+ * @since May 2020
+ */
 
 public class VehicleData {
 
@@ -18,12 +18,7 @@ public class VehicleData {
 	private String latitude;
 	private String longitude;
 
-
-	//@JsonSerialize(using = LocalDateTimeSerializer.class)
-	//@JsonDeserialize(using = LocalDateTimeDeserializer.class)
-	//@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone="IST")
-	//private LocalDateTime eventDateTime;
-	 @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone="IST")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "IST")
 	private Date eventDateTime;
 
 	// "gpsDistanceInMetres":56783295,
@@ -34,9 +29,8 @@ public class VehicleData {
 	private double gpsSpeedInPoint1Kph;
 	private double vehicleFuelInMillilitres;
 
-	public VehicleData()
-	{
-	
+	public VehicleData() {
+
 	}
 
 	public VehicleData(String vehicleId, String vehicleType, String eventCode, String latitude, String longitude,
@@ -123,9 +117,5 @@ public class VehicleData {
 				+ ", gpsSpeedInPoint1Kph=" + gpsSpeedInPoint1Kph + ", vehicleFuelInMillilitres="
 				+ vehicleFuelInMillilitres + "]";
 	}
-
-	
-
-
 
 }

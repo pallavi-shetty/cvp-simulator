@@ -1,39 +1,37 @@
 package com.tml.fleetman.cvpsimulator.sender;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
+import java.util.Map;
 import org.slf4j.Logger;
+import java.util.HashMap;
+import java.util.Properties;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import javax.annotation.Resource;
+import kafka.javaapi.producer.Producer;
 import org.springframework.core.env.Environment;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.springframework.stereotype.Component;
-
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.EnvironmentAware;
 import com.tml.fleetman.cvpsimulator.vo.VehicleData;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import kafka.javaapi.producer.Producer;
+import org.springframework.beans.factory.annotation.Value;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Resource;
-
+/**
+ * @author Pallavi Shetty
+ * @since May 2020
+ */
 
 @Configuration
 @PropertySource(ignoreResourceNotFound = true, value = "classpath:application.properties")
 public class SenderConfig implements EnvironmentAware {
 
-	
 	@Resource
 	private Environment env;
 
@@ -41,50 +39,43 @@ public class SenderConfig implements EnvironmentAware {
 		return env;
 	}
 
-
-    @Override
-    public void setEnvironment(final Environment environment) {
-        this.env = environment;
+	@Override
+	public void setEnvironment(final Environment environment) {
+		this.env = environment;
 		bootstrapAddress = env.getProperty("kafka.bootstrapAddress");
 		zookeeper = env.getProperty("com.cvp.kafka.zookeeper");
-		brokerList= env.getProperty("com.cvp.kafka.brokerlist");
+		brokerList = env.getProperty("com.cvp.kafka.brokerlist");
 		topic = env.getProperty("com.cvp.kafka.topic");
-		
+
 		logger.info("Using Zookeeper=" + zookeeper + " ,Broker-list=" + brokerList + " and topic " + topic);
-    }
+	}
 
 	@Value("${kafka.bootstrapAddress}")
 	private String bootstrapAddress;
-	   
 
 	@Value("${com.cvp.kafka.zookeeper}")
 	String zookeeper;
 
-
 	@Value("${com.cvp.kafka.brokerlist}")
 	String brokerList;
-
 
 	@Value("${com.cvp.kafka.topic}")
 	String topic;
 
-
-
 	public String getTopic() {
 		return topic;
 	}
-
 
 	public void setTopic(String topic) {
 		this.topic = topic;
 	}
 
 	private static final Logger logger = LoggerFactory.getLogger(SenderConfig.class);
-	
+
 	SenderConfig() {
-		
+
 		logger.info("Using Zookeeper=" + zookeeper + " ,Broker-list=" + brokerList + " and topic " + topic);
-		
+
 	}
 
 	@Bean
@@ -121,18 +112,18 @@ public class SenderConfig implements EnvironmentAware {
 	public KafkaTemplate<String, VehicleData> vehicleDataKafkaTemplate() {
 		return new KafkaTemplate<>(vehicleDataProducerFactory());
 	}
-	
+
 	@Bean
-	public Producer<String, VehicleData> vehicleDataProducer() 
-	{
-	// set producer properties
-	Properties properties = new Properties();
-	properties.put("zookeeper.connect", zookeeper);
-	properties.put("metadata.broker.list", brokerList);
-	properties.put("request.required.acks", "1");
-	properties.put("serializer.class", "com.tml.fleetman.cvpsimulator.vo.VehicleDataEncoder");
-	//generate event
-	kafka.javaapi.producer.Producer<String, VehicleData> producer = new kafka.javaapi.producer.Producer<String, VehicleData>(new kafka.producer.ProducerConfig(properties));
-	return producer;
+	public Producer<String, VehicleData> vehicleDataProducer() {
+		// set producer properties
+		Properties properties = new Properties();
+		properties.put("zookeeper.connect", zookeeper);
+		properties.put("metadata.broker.list", brokerList);
+		properties.put("request.required.acks", "1");
+		properties.put("serializer.class", "com.tml.fleetman.cvpsimulator.vo.VehicleDataEncoder");
+		// generate event
+		kafka.javaapi.producer.Producer<String, VehicleData> producer = new kafka.javaapi.producer.Producer<String, VehicleData>(
+				new kafka.producer.ProducerConfig(properties));
+		return producer;
 	}
 }

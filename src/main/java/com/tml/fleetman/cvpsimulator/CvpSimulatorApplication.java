@@ -1,62 +1,33 @@
 package com.tml.fleetman.cvpsimulator;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.Arrays;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
+import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import kafka.producer.KeyedMessage;
+import kafka.javaapi.producer.Producer;
 import org.springframework.boot.SpringApplication;
+import com.tml.fleetman.cvpsimulator.vo.VehicleData;
+import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import com.tml.fleetman.cvpsimulator.sender.SenderConfig;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.TopicPartition;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.tml.fleetman.cvpsimulator.sender.SenderConfig;
-import com.tml.fleetman.cvpsimulator.vo.VehicleData;
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.TopicPartition;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
+/**
+ * @author Pallavi Shetty
+ * @since May 2020
+ */
 
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
 public class CvpSimulatorApplication {
@@ -135,8 +106,7 @@ public class CvpSimulatorApplication {
 	 */
 	private void generateIoTEvent(Producer<String, VehicleData> producer, String topic) throws InterruptedException {
 
-		List<String> vehicleTypeList = Arrays
-				.asList(new String[] { "CV", "PV", "EV" });
+		List<String> vehicleTypeList = Arrays.asList(new String[] { "CV", "PV", "EV" });
 
 		List<String> routeList = Arrays.asList(new String[] { "Route-1", "Route-5", "Route-10", "Route-15", "Route-20",
 				"Route-25", "Route-30", "Route-35", "Route-40", "Route-45", "Route-50", "Route-55", "Route-60",
@@ -271,7 +241,8 @@ public class CvpSimulatorApplication {
 		} else if (routeId.equals("Route-80")) { // Dockyard Rd, Dockyard, Wadi Bandar, Mazgaon
 			lattitude = 18.967687;
 			longitude = 72.845461;
-		} else if (routeId.equals("Route-85")) { // Bombay Launch Service Pvt Ltd, Orient House, Adi Marzaban Path, Ballard Estate
+		} else if (routeId.equals("Route-85")) { // Bombay Launch Service Pvt Ltd, Orient House, Adi Marzaban Path,
+													// Ballard Estate
 			lattitude = 18.954164;
 			longitude = 72.841889;
 		} else if (routeId.equals("Route-90")) { // Hotel Elphinstone Annexe, Indira Docks, Caranak, Masjid Bandar
