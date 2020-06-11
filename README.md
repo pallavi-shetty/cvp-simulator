@@ -1,2 +1,2 @@
 # cvp-simulator
-Created CVP vehicle simulator to be used in dev environment
+Created CVP vehicle event data (IOT) simulator to be used in dev environment
