@@ -14,6 +14,8 @@ import com.tml.fleetman.cvpsimulator.vo.VehicleData;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.lang3.RandomStringUtils;
+//import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Configuration;
@@ -42,24 +44,27 @@ public class SenderConfig implements EnvironmentAware {
 	@Override
 	public void setEnvironment(final Environment environment) {
 		this.env = environment;
-		bootstrapAddress = env.getProperty("kafka.bootstrapAddress");
-		zookeeper = env.getProperty("com.cvp.kafka.zookeeper");
-		brokerList = env.getProperty("com.cvp.kafka.brokerlist");
-		topic = env.getProperty("com.cvp.kafka.topic");
+		bootstrapAddress = env.getProperty("kafka.bootstrapServers");
+		zookeeper = env.getProperty("kafka.zookeeper");
+		topic = env.getProperty("kafka.consumer.topics.telemetryTopic");
 
-		logger.info("Using Zookeeper=" + zookeeper + " ,Broker-list=" + brokerList + " and topic " + topic);
+		logger.info("Using Zookeeper=" + zookeeper + " ,Broker-list=" + bootstrapAddress + " and topic " + topic);
 	}
 
-	@Value("${kafka.bootstrapAddress}")
+	@Value("${kafka.bootstrapServers}")
 	private String bootstrapAddress;
 
-	@Value("${com.cvp.kafka.zookeeper}")
+	@Value("${kafka.zookeeper}")
 	String zookeeper;
 
-	@Value("${com.cvp.kafka.brokerlist}")
-	String brokerList;
+    @Value("${kafka.producer.clientId}")
+    private String producerClientId;
+    
+	private String clientIdPrefix = RandomStringUtils.randomAlphabetic(4);
+	
+	//private String clientIdPrefix = "ABCK";
 
-	@Value("${com.cvp.kafka.topic}")
+	@Value("${kafka.consumer.topics.telemetryTopic}")
 	String topic;
 
 	public String getTopic() {
@@ -74,16 +79,19 @@ public class SenderConfig implements EnvironmentAware {
 
 	SenderConfig() {
 
-		logger.info("Using Zookeeper=" + zookeeper + " ,Broker-list=" + brokerList + " and topic " + topic);
+		logger.info("Using Zookeeper=" + zookeeper + " ,Broker-list=" + bootstrapAddress + " and topic " + topic);
 
 	}
 
+
+	  
 	@Bean
 	public ProducerFactory<String, String> producerFactory() {
 		Map<String, Object> configProps = new HashMap<>();
 		configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+		configProps.put(ProducerConfig.CLIENT_ID_CONFIG, producerClientId + "-" + clientIdPrefix);
 		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 		return new DefaultKafkaProducerFactory<>(configProps);
 	}
 
@@ -97,6 +105,7 @@ public class SenderConfig implements EnvironmentAware {
 		Map<String, Object> config = new HashMap<>();
 
 		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+		config.put(ProducerConfig.CLIENT_ID_CONFIG, producerClientId + "-" + clientIdPrefix);
 		config.put(ProducerConfig.ACKS_CONFIG, "all");
 		config.put(ProducerConfig.RETRIES_CONFIG, 0);
 		config.put(ProducerConfig.BATCH_SIZE_CONFIG, 1000);
@@ -118,7 +127,7 @@ public class SenderConfig implements EnvironmentAware {
 		// set producer properties
 		Properties properties = new Properties();
 		properties.put("zookeeper.connect", zookeeper);
-		properties.put("metadata.broker.list", brokerList);
+		properties.put("metadata.broker.list", bootstrapAddress);
 		properties.put("request.required.acks", "1");
 		properties.put("serializer.class", "com.tml.fleetman.cvpsimulator.vo.VehicleDataEncoder");
 		// generate event

@@ -40,36 +40,6 @@ public class CvpSimulatorApplication {
 
 		MessageProducer producer = context.getBean(MessageProducer.class);
 
-		/*
-		 * Sending a Hello World message to topic 'topic1'. Must be received by both
-		 * listeners with group foo and bar with containerFactory
-		 * fooKafkaListenerContainerFactory and barKafkaListenerContainerFactory
-		 * respectively. It will also be received by the listener with
-		 * headersKafkaListenerContainerFactory as container factory
-		 */
-		producer.sendMessage("Hello, World!");
-
-		/*
-		 * Sending message to a topic with 5 partition, each message to a different
-		 * partition. But as per listener configuration, only the messages from
-		 * partition 0 and 3 will be consumed.
-		 */
-		for (int i = 0; i < 5; i++) {
-			producer.sendMessageToPartion("Hello To Partioned Topic!", i);
-		}
-
-		/*
-		 * Sending message to 'filtered' topic. As per listener configuration, all
-		 * messages with char sequence 'World' will be discarded.
-		 */
-		producer.sendMessageToFiltered("Hello Pallavi!");
-		producer.sendMessageToFiltered("Hello World!");
-
-		/*
-		 * Sending message to 'VehicleData' topic. This will send and received a java
-		 * object with the help of VehicleDataKafkaListenerContainerFactory.
-		 */
-
 		String vehicleId = UUID.randomUUID().toString();
 		String vehicleType = "Large Truck";
 		String routeId = "Route-37";
@@ -121,7 +91,9 @@ public class CvpSimulatorApplication {
 		while (true) {
 			List<VehicleData> vehicleDataList = new ArrayList<VehicleData>();
 
-			String vehicleId = "0352984084330025";
+			// List<String> vehicleIdList = Arrays.asList(new String[] { "0352984084330025",
+			// "0352984083190032"});
+			List<String> vehicleIdList = Arrays.asList(new String[] { "0352984083190031" });
 
 			// Use this if different type of vehicle
 			// String vehicleType = vehicleTypeList.get(rand.nextInt(3));
@@ -130,6 +102,7 @@ public class CvpSimulatorApplication {
 
 			// Vehicle route from Thane to CST
 			for (int j = 0; j < 21; j++) {
+				String vehicleId = vehicleIdList.get(rand.nextInt(1));
 				String eventCode = eventList.get(rand.nextInt(15));
 				double gpsSpeedInPoint1Kph = rand.nextInt(100 - 20) + 20;// random speed between 20 to 100
 				double vehicleFuelInMillilitres = rand.nextInt(40 - 10) + 10;
@@ -147,7 +120,7 @@ public class CvpSimulatorApplication {
 				event.setEventDateTime(new Date());
 				KeyedMessage<String, VehicleData> data = new KeyedMessage<String, VehicleData>(topic, event);
 				producer.send(data);
-				Thread.sleep(rand.nextInt(1000 - 500) + 500);// random delay of 0.5 to 1 second
+				Thread.sleep(rand.nextInt(2000 - 1000) + 3000);// random delay of 3 to 4 second
 			}
 
 			Thread.sleep(10000);// delay of 10 second
@@ -155,6 +128,7 @@ public class CvpSimulatorApplication {
 
 			// Vehicle route from CST to Thane
 			for (int j = 20; j >= 0; j--) {
+				String vehicleId = vehicleIdList.get(rand.nextInt(1));
 				String eventCode = eventList.get(rand.nextInt(15));
 				double gpsSpeedInPoint1Kph = rand.nextInt(100 - 20) + 20;// random speed between 20 to 100
 				double vehicleFuelInMillilitres = rand.nextInt(40 - 10) + 10;
@@ -173,7 +147,7 @@ public class CvpSimulatorApplication {
 				event.setEventDateTime(new Date());
 				KeyedMessage<String, VehicleData> data = new KeyedMessage<String, VehicleData>(topic, event);
 				producer.send(data);
-				Thread.sleep(rand.nextInt(1000 - 500) + 500);// random delay of 0.5 to 1 second
+				Thread.sleep(rand.nextInt(2000 - 1000) + 3000);// random delay of 3 to 4 second
 			}
 
 			Thread.sleep(10000);// delay of 10 second
@@ -267,49 +241,10 @@ public class CvpSimulatorApplication {
 	public static class MessageProducer {
 
 		@Autowired
-		private KafkaTemplate<String, String> kafkaTemplate;
-
-		@Autowired
 		private KafkaTemplate<String, VehicleData> vehicleDataKafkaTemplate;
 
-		@Value(value = "${message.topic.name}")
-		private String topicName;
-
-		@Value(value = "${partitioned.topic.name}")
-		private String partionedTopicName;
-
-		@Value(value = "${filtered.topic.name}")
-		private String filteredTopicName;
-
-		@Value(value = "${vehicleData.topic.name}")
+		@Value(value = "${kafka.consumer.topics.telemetryTopic}")
 		private String vehicleDataTopicName;
-
-		public void sendMessage(String message) {
-
-			ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topicName, message);
-
-			future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-
-				@Override
-				public void onSuccess(SendResult<String, String> result) {
-					System.out.println(
-							"Sent message=[" + message + "] with offset=[" + result.getRecordMetadata().offset() + "]");
-				}
-
-				@Override
-				public void onFailure(Throwable ex) {
-					System.out.println("Unable to send message=[" + message + "] due to : " + ex.getMessage());
-				}
-			});
-		}
-
-		public void sendMessageToPartion(String message, int partition) {
-			kafkaTemplate.send(partionedTopicName, partition, null, message);
-		}
-
-		public void sendMessageToFiltered(String message) {
-			kafkaTemplate.send(filteredTopicName, message);
-		}
 
 		public void sendVehicleDataMessage(VehicleData VehicleData) {
 			vehicleDataKafkaTemplate.send(vehicleDataTopicName, VehicleData);
